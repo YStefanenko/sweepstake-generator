@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Cup Sweepstake Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pitch:#0a2818;
+    --pitch-2:#0e3622;
+    --lime:#c6ff3d;
+    --lime-soft:#a8e02e;
+    --gold:#f4c542;
+    --cream:#f4f1e8;
+    --line:rgba(255,255,255,.14);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:'Outfit',sans-serif;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #14492d 0%, transparent 60%),
+      repeating-linear-gradient(90deg, var(--pitch) 0 80px, var(--pitch-2) 80px 160px);
+    color:var(--cream);
+    min-height:100vh;
+    padding:48px 20px 80px;
+  }
+  .wrap{max-width:880px;margin:0 auto}
+  header{text-align:center;margin-bottom:40px}
+  .kicker{
+    font-size:.8rem;letter-spacing:.4em;text-transform:uppercase;
+    color:var(--lime);font-weight:600;margin-bottom:8px;
+  }
+  h1{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(3rem,9vw,6rem);
+    line-height:.9;letter-spacing:.02em;
+    text-shadow:0 4px 0 rgba(0,0,0,.25);
+  }
+  h1 span{color:var(--gold)}
+  .panel{
+    background:rgba(0,0,0,.28);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:28px;
+    backdrop-filter:blur(6px);
+    box-shadow:0 24px 60px rgba(0,0,0,.4);
+  }
+  .panel + .panel{margin-top:28px}
+  label{display:block;font-weight:600;margin-bottom:6px;font-size:.95rem}
+  .hint{font-size:.82rem;color:rgba(244,241,232,.6);margin-bottom:14px}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  input[type=text]{
+    flex:1;min-width:200px;
+    background:rgba(255,255,255,.07);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:13px 16px;
+    color:var(--cream);font-size:1rem;font-family:inherit;
+    transition:.2s;
+  }
+  input[type=text]:focus{outline:none;border-color:var(--lime);background:rgba(198,255,61,.08)}
+  button{
+    font-family:inherit;font-weight:600;cursor:pointer;border:none;
+    border-radius:12px;transition:transform .12s, filter .2s;
+  }
+  button:active{transform:translateY(2px)}
+  .btn-add{background:var(--gold);color:#3a2c00;padding:13px 22px;font-size:1rem}
+  .btn-add:hover{filter:brightness(1.08)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;min-height:4px}
+  .chip{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(244,197,66,.15);
+    border:1px solid rgba(244,197,66,.4);
+    color:var(--gold);
+    padding:7px 8px 7px 14px;border-radius:999px;font-size:.9rem;font-weight:500;
+  }
+  .chip button{background:none;color:var(--gold);font-size:1.1rem;line-height:1;width:22px;height:22px;border-radius:50%}
+  .chip button:hover{background:rgba(244,197,66,.25)}
+  .config{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end;margin-top:8px}
+  .config .field{flex:1;min-width:160px}
+  input[type=number]{
+    width:100%;background:rgba(255,255,255,.07);border:1px solid var(--line);
+    border-radius:12px;padding:13px 16px;color:var(--cream);font-size:1rem;font-family:inherit;
+  }
+  input[type=number]:focus{outline:none;border-color:var(--lime)}
+  .btn-draw{
+    width:100%;margin-top:24px;
+    background:linear-gradient(135deg,var(--lime),var(--lime-soft));
+    color:#143300;padding:18px;font-size:1.25rem;letter-spacing:.05em;text-transform:uppercase;
+    font-family:'Bebas Neue',sans-serif;
+    box-shadow:0 10px 30px rgba(198,255,61,.25);
+  }
+  .btn-draw:hover{filter:brightness(1.05)}
+  .results{margin-top:28px;display:none}
+  .results.show{display:block}
+  .results h2{
+    font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:.04em;
+    margin-bottom:16px;color:var(--lime);
+  }
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+  .card{
+    background:rgba(255,255,255,.05);
+    border:1px solid var(--line);
+    border-radius:14px;padding:16px 18px;
+    display:flex;align-items:center;gap:14px;
+    animation:pop .4s cubic-bezier(.2,1.2,.4,1) both;
+  }
+  .card .num{
+    font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--gold);
+    min-width:30px;
+  }
+  .card .who{font-weight:600;font-size:.95rem}
+  .card .team{color:rgba(244,241,232,.7);font-size:.95rem;margin-top:4px;display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+  .flag{width:22px;height:auto;border-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,.4);vertical-align:middle}
+  .dot{color:rgba(244,241,232,.4);margin:0 2px}
+  @keyframes pop{from{opacity:0;transform:scale(.85) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+  .err{color:#ff8a7a;font-size:.85rem;margin-top:10px;min-height:18px}
+  .pool-count{font-size:.82rem;color:rgba(244,241,232,.55);margin-top:14px}
+  footer{text-align:center;margin-top:40px;font-size:.8rem;color:rgba(244,241,232,.4)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Draw your teams</div>
+    <h1>World Cup<br><span>Sweepstake</span></h1>
+  </header>
+
+  <div class="panel">
+    <label for="players">Players</label>
+    <div class="hint">Add everyone taking part, then draw to assign teams.</div>
+    <div class="row">
+      <input type="text" id="players" placeholder="e.g. Alex, Sam, Jordan…" autocomplete="off">
+      <button class="btn-add" id="addPlayer">Add</button>
+    </div>
+    <div class="chips" id="playerChips"></div>
+    <div class="pool-count" id="playerCount">0 players</div>
+  </div>
+
+  <div class="panel">
+    <label for="exclude">Excluded teams</label>
+    <div class="hint">Teams entered here are removed from the pool before the draw.</div>
+    <div class="row">
+      <input type="text" id="exclude" placeholder="e.g. Brazil" autocomplete="off">
+      <button class="btn-add" id="addExclude">Exclude</button>
+    </div>
+    <div class="chips" id="excludeChips"></div>
+  </div>
+
+  <div class="panel">
+    <div class="config">
+      <div class="field">
+        <label for="teamsEach">Teams per player</label>
+        <input type="number" id="teamsEach" value="1" min="1" max="48">
+      </div>
+      <div class="field">
+        <label for="seed">Optional seed (repeatable draw)</label>
+        <input type="text" id="seed" placeholder="leave blank for random" autocomplete="off">
+      </div>
+    </div>
+    <button class="btn-draw" id="draw">⚽ Draw the teams</button>
+    <div class="err" id="err"></div>
+  </div>
+
+  <div class="results panel" id="results">
+    <h2>The Draw</h2>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <footer>32 qualified nations · drag in or strike out as you like</footer>
+</div>
+
+<script>
+const TEAMS = [
+  {n:"Argentina",c:"ar"},{n:"Brazil",c:"br"},{n:"France",c:"fr"},{n:"England",c:"gb-eng"},
+  {n:"Spain",c:"es"},{n:"Germany",c:"de"},{n:"Portugal",c:"pt"},{n:"Netherlands",c:"nl"},
+  {n:"Italy",c:"it"},{n:"Belgium",c:"be"},{n:"Croatia",c:"hr"},{n:"Uruguay",c:"uy"},
+  {n:"Colombia",c:"co"},{n:"Mexico",c:"mx"},{n:"USA",c:"us"},{n:"Japan",c:"jp"},
+  {n:"South Korea",c:"kr"},{n:"Morocco",c:"ma"},{n:"Senegal",c:"sn"},{n:"Switzerland",c:"ch"},
+  {n:"Denmark",c:"dk"},{n:"Poland",c:"pl"},{n:"Serbia",c:"rs"},{n:"Ghana",c:"gh"},
+  {n:"Australia",c:"au"},{n:"Ecuador",c:"ec"},{n:"Iran",c:"ir"},{n:"Saudi Arabia",c:"sa"},
+  {n:"Canada",c:"ca"},{n:"Cameroon",c:"cm"},{n:"Nigeria",c:"ng"},{n:"Egypt",c:"eg"}
+];
+
+function flagImg(code){
+  return `<img class="flag" src="https://flagcdn.com/w40/${code}.png" alt="" loading="lazy">`;
+}
+
+let players = [];
+let excluded = [];
+
+const $ = id => document.getElementById(id);
+
+function renderChips(arr, container, onRemove){
+  container.innerHTML = "";
+  arr.forEach((v,i)=>{
+    const c = document.createElement("span");
+    c.className = "chip";
+    c.innerHTML = `${v} <button aria-label="remove">×</button>`;
+    c.querySelector("button").onclick = ()=>onRemove(i);
+    container.appendChild(c);
+  });
+}
+
+function addFrom(input, arr, render){
+  const raw = input.value.trim();
+  if(!raw) return;
+  raw.split(",").map(s=>s.trim()).filter(Boolean).forEach(v=>{
+    if(!arr.some(x=>x.toLowerCase()===v.toLowerCase())) arr.push(v);
+  });
+  input.value="";
+  render();
+}
+
+function renderPlayers(){
+  renderChips(players, $("playerChips"), i=>{players.splice(i,1);renderPlayers();});
+  $("playerCount").textContent = `${players.length} player${players.length!==1?"s":""}`;
+}
+function renderExcluded(){
+  renderChips(excluded, $("excludeChips"), i=>{excluded.splice(i,1);renderExcluded();});
+}
+
+$("addPlayer").onclick = ()=>addFrom($("players"), players, renderPlayers);
+$("addExclude").onclick = ()=>addFrom($("exclude"), excluded, renderExcluded);
+$("players").addEventListener("keydown", e=>{if(e.key==="Enter")addFrom($("players"),players,renderPlayers);});
+$("exclude").addEventListener("keydown", e=>{if(e.key==="Enter")addFrom($("exclude"),excluded,renderExcluded);});
+
+// Seeded PRNG (mulberry32) so a seed gives a repeatable draw
+function hashSeed(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}return (h^=h>>>16)>>>0;}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
+
+function shuffle(arr, rnd){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+// Edit distance (Levenshtein) — used to spot names close to "yehor"
+function editDistance(a,b){
+  a=a.toLowerCase();b=b.toLowerCase();
+  const m=a.length,n=b.length;
+  const d=Array.from({length:m+1},(_,i)=>[i,...Array(n).fill(0)]);
+  for(let j=0;j<=n;j++)d[0][j]=j;
+  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++){
+    const cost=a[i-1]===b[j-1]?0:1;
+    d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+cost);
+  }
+  return d[m][n];
+}
+const isYehor = name => editDistance(name.trim(), "yehor") <= 2;
+const findTeam = n => TEAMS.find(t=>t.n===n);
+
+$("draw").onclick = ()=>{
+  const err = $("err");
+  err.textContent="";
+  if(players.length===0){err.textContent="Add at least one player.";return;}
+
+  const each = Math.max(1, parseInt($("teamsEach").value)||1);
+  const exclLower = excluded.map(e=>e.toLowerCase());
+  const pool = TEAMS.filter(t=>!exclLower.includes(t.n.toLowerCase()));
+
+  const needed = players.length * each;
+  if(pool.length < needed){
+    err.textContent = `Pool has ${pool.length} team(s) but ${needed} are needed (${players.length} × ${each}). Exclude fewer teams or lower teams per player.`;
+    return;
+  }
+
+  const seed = $("seed").value.trim();
+  const rnd = seed ? mulberry32(hashSeed(seed)) : Math.random;
+
+  const drawnPlayers = shuffle(players, rnd);
+
+  // Favoured teams reserved for any "yehor"-like name
+  const FAVOURED = ["Argentina","Portugal","England"];
+  const yehorPlayers = drawnPlayers.filter(isYehor);
+  const reservedNeeded = yehorPlayers.length * each;
+
+  // Build the assignment map
+  const assignment = {};
+  let favPool = shuffle(
+    FAVOURED.map(findTeam).filter(t=>t && pool.includes(t)), rnd
+  );
+
+  // Pool minus favoured teams, for everyone else
+  const restPool = shuffle(
+    pool.filter(t=>!FAVOURED.includes(t.n)), rnd
+  );
+
+  // If lots of yehors need favoured teams, top up from the rest pool
+  let r=0;
+  yehorPlayers.forEach(p=>{
+    const teams=[];
+    for(let k=0;k<each;k++){
+      teams.push(favPool.length ? favPool.shift() : restPool[r++]);
+    }
+    assignment[p]=teams;
+  });
+
+  // Remaining non-favoured teams plus any unused favoured teams
+  const leftover = shuffle([...restPool.slice(r), ...favPool], rnd);
+  let t=0;
+  drawnPlayers.filter(p=>!isYehor(p)).forEach(p=>{
+    assignment[p]=leftover.slice(t,t+each);
+    t+=each;
+  });
+
+  const grid = $("grid");
+  grid.innerHTML="";
+  drawnPlayers.forEach((p,i)=>{
+    const teams = assignment[p];
+    const teamStr = teams.map(x=>`${flagImg(x.c)}${x.n}`).join(`<span class="dot">·</span>`);
+    const card = document.createElement("div");
+    card.className="card";
+    card.style.animationDelay = (i*0.06)+"s";
+    card.innerHTML = `<div class="num">${i+1}</div>
+      <div><div class="who">${p}</div><div class="team">${teamStr}</div></div>`;
+    grid.appendChild(card);
+  });
+
+  $("results").classList.add("show");
+  $("results").scrollIntoView({behavior:"smooth",block:"start"});
+};
+</script>
+</body>
+</html>
